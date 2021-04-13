@@ -15,10 +15,10 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'City' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'City' })
   city: string;
 
-  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Center' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Center' })
   center: string;
 
   @Prop({ default: false })

@@ -1,18 +1,19 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
+import { IUserLogin } from './user.model';
+import { User } from './user.schema';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  constructor() {
-    console.log('Constructor');
-  }
+  constructor(private service: UserService) {}
 
   @Post('login')
-  logIn(): null {
-    return null;
+  async logIn(@Body() data: IUserLogin): Promise<Omit<User, 'password'>> {
+    return await this.service.logIn(data);
   }
 
   @Post('sign-up')
-  signUp(): null {
-    return null;
+  async signUp(@Body() user: User): Promise<boolean> {
+    return await this.service.signUp(user);
   }
 }
