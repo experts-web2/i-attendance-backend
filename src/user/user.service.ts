@@ -6,17 +6,33 @@ import {
 } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './user.schema';
-import { IUserLogin } from './user.model';
+import { IUserLogin, IUserLoginResponse } from './user.model';
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private model: Model<UserDocument>,
+    private jwtService: JwtService,
+  ) {}
 
-  async logIn({
-    email,
-    password,
-  }: IUserLogin): Promise<Omit<User, 'password'>> {
+  async validateUser(
+    username: string,
+    password: string,
+  ): Promise<Omit<User, 'password'>> | null {
+    try {
+      const user = await this.model.findOne({ email: username });
+      if (!user) throw new NotFoundException(null, 'User Not Found');
+      const isPasswordMatched = await bcrypt.compare(password, user.password);
+      if (isPasswordMatched) {
+        const { password, ...rest } = user.toObject();
+        return rest;
+      } else return null;
+    } catch (error) {}
+  }
+
+  async logIn({ email, password }: IUserLogin): Promise<IUserLoginResponse> {
     try {
       if (!email || !password)
         throw new BadRequestException(null, 'Required Parameters Missing');
@@ -25,7 +41,11 @@ export class UserService {
       const isPasswordMatched = await bcrypt.compare(password, user.password);
       if (isPasswordMatched) {
         const { password, ...rest } = user.toObject();
-        return rest;
+        const token = this.jwtService.sign({
+          username: user.name,
+          sub: user._id,
+        });
+        return { user: rest, token };
       }
     } catch (error) {
       console.log({ error });
