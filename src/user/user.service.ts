@@ -8,13 +8,19 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { MailerService } from '@nestjs-modules/mailer';
 import { User, UserDocument } from './user.schema';
-import { IUserLogin, IUserLoginResponse } from './user.model';
+import {
+  IChangePasswordRequest,
+  IUserLogin,
+  IUserLoginResponse,
+} from './user.model';
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private model: Model<UserDocument>,
     private jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async validateUser(
@@ -69,6 +75,37 @@ export class UserService {
       return true;
     } catch (error) {
       console.log({ error });
+    }
+  }
+
+  async changePassword(payload: IChangePasswordRequest): Promise<boolean> {
+    const { oldPassword, newPassword, email } = payload;
+    try {
+      const user = await this.model.findOne({ email });
+      const oldPasswordMatched = await bcrypt.compare(
+        oldPassword,
+        user.password,
+      );
+      if (oldPasswordMatched) {
+        const password = await bcrypt.hash(newPassword, 10);
+        await this.model.updateOne({ _id: user._id }, { ...user, password });
+        return true;
+      }
+    } catch (error) {}
+  }
+
+  // Todo. Nodemailer not actively working
+  async forgotPassword(email: string): Promise<boolean> {
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        from: 'test@test.com',
+        subject: 'Reset Your Password',
+        text: 'Reset Your Password',
+      });
+      return true;
+    } catch (error) {
+      console.log(error);
     }
   }
 }

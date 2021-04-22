@@ -9,3 +9,9 @@ export interface IUserLoginResponse {
   user: Omit<User, 'password'>;
   token: string;
 }
+
+export interface IChangePasswordRequest {
+  email: string;
+  oldPassword: string;
+  newPassword: string;
+}
