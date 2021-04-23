@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { UserModule } from './user/user.module';
 import { CityModule } from './city/city.module';
+import { CenterModule } from './center/center.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CityModule } from './city/city.module';
     }),
     UserModule,
     CityModule,
+    CenterModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
