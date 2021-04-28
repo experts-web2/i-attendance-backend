@@ -39,7 +39,9 @@ export class UserController {
   }
 
   @Get('')
-  async getUsers(@Query() query: GetUsersQueryParams): Promise<UserDto[]> {
+  async getUsers(
+    @Query() query: GetUsersQueryParams,
+  ): Promise<Omit<UserDto, 'password'>[]> {
     return await this.service.getUsers(query);
   }
 }

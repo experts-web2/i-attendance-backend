@@ -119,13 +119,15 @@ export class UserService {
     }
   }
 
-  async getUsers(params: GetUsersQueryParams): Promise<UserDto[]> {
+  async getUsers(
+    params: GetUsersQueryParams,
+  ): Promise<Omit<UserDto, 'password'>[]> {
     try {
       let query = this.model.find();
       if (params.city) query = query.where('city').equals(params.city);
       if (params.center) query = query.where('center').equals(params.center);
       const users = await query.exec();
-      return users;
+      return users.map(({ password, ...rest }) => ({ ...rest }));
     } catch (error) {
       throw new BadRequestException(null, 'Not Found');
     }
