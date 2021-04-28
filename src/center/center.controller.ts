@@ -10,7 +10,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CenterService } from './center.service';
-import { CenterDto } from "../dtos/center.dto"
+import { Public } from '../meta';
+import { CenterDto } from '../dtos/center.dto';
 
 @ApiTags('Center')
 @Controller('center')
@@ -37,6 +38,7 @@ export class CenterController {
     return await this.service.getCenter(id);
   }
 
+  @Public()
   @Get('')
   async getCenters(@Query('city') city?: string): Promise<CenterDto[]> {
     console.log('City', city);
