@@ -1,8 +1,14 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { Public } from '../meta';
-import { UserDto, UserLoginDto, UserLoginResponseDto, ChangePasswordDto } from "../dtos"
+import {
+  UserDto,
+  UserLoginDto,
+  UserLoginResponseDto,
+  ChangePasswordDto,
+  GetUsersQueryParams,
+} from '../dtos';
 
 @ApiTags('User')
 @Controller('user')
@@ -21,16 +27,19 @@ export class UserController {
     return await this.service.signUp(user);
   }
 
-  @Post('change-password')
-  async changePassword(
-    @Body() payload: ChangePasswordDto,
-  ): Promise<boolean> {
-    return await this.service.changePassword(payload);
-  }
-
   @Public()
   @Get('forgot-password/:email')
   async forgotPassword(@Param('email') email: string): Promise<boolean> {
     return await this.service.forgotPassword(email);
+  }
+
+  @Post('change-password')
+  async changePassword(@Body() payload: ChangePasswordDto): Promise<boolean> {
+    return await this.service.changePassword(payload);
+  }
+
+  @Get('')
+  async getUsers(@Query() query: GetUsersQueryParams): Promise<UserDto[]> {
+    return await this.service.getUsers(query);
   }
 }

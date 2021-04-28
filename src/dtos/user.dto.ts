@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 export class UserDto {
   name: string;
   email: string;
@@ -9,17 +10,25 @@ export class UserDto {
 }
 
 export class UserLoginDto {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 }
 
 export class UserLoginResponseDto {
-    user: Omit<UserDto, 'password'>;
-    token: string;
-  }
+  user: Omit<UserDto, 'password'>;
+  token: string;
+}
 
-  export class ChangePasswordDto {
-    email: string;
-    oldPassword: string;
-    newPassword: string;
-  }
+export class ChangePasswordDto {
+  email: string;
+  oldPassword: string;
+  newPassword: string;
+}
+
+export class GetUsersQueryParams {
+  @ApiPropertyOptional()
+  city: string;
+
+  @ApiPropertyOptional()
+  center: string;
+}

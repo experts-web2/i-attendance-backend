@@ -10,7 +10,13 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { User, UserDocument } from './user.schema';
-import { UserDto, UserLoginDto, UserLoginResponseDto, ChangePasswordDto } from "../dtos"
+import {
+  UserDto,
+  UserLoginDto,
+  UserLoginResponseDto,
+  ChangePasswordDto,
+  GetUsersQueryParams,
+} from '../dtos';
 
 @Injectable()
 export class UserService {
@@ -32,10 +38,15 @@ export class UserService {
         const { password, ...rest } = user.toObject();
         return rest;
       } else return null;
-    } catch (error) {}
+    } catch (error) {
+      throw new NotFoundException(null, 'User Not Found');
+    }
   }
 
-  async logIn({ email, password }: UserLoginDto): Promise<UserLoginResponseDto> {
+  async logIn({
+    email,
+    password,
+  }: UserLoginDto): Promise<UserLoginResponseDto> {
     try {
       if (!email || !password)
         throw new BadRequestException(null, 'Required Parameters Missing');
@@ -51,7 +62,7 @@ export class UserService {
         return { user: rest, token };
       }
     } catch (error) {
-      console.log({ error });
+      throw new NotFoundException(null, 'User Not Found');
     }
   }
 
@@ -71,7 +82,7 @@ export class UserService {
       await newUser.save();
       return true;
     } catch (error) {
-      console.log({ error });
+      throw new NotFoundException(null, 'User Not Found');
     }
   }
 
@@ -88,7 +99,9 @@ export class UserService {
         await this.model.updateOne({ _id: user._id }, { ...user, password });
         return true;
       }
-    } catch (error) {}
+    } catch (error) {
+      throw new BadRequestException(null, 'User Not Found');
+    }
   }
 
   // Todo: Nodemailer not actively working
@@ -102,7 +115,19 @@ export class UserService {
       });
       return true;
     } catch (error) {
-      console.log(error);
+      throw new BadRequestException(null, 'Not Found');
+    }
+  }
+
+  async getUsers(params: GetUsersQueryParams): Promise<UserDto[]> {
+    try {
+      let query = this.model.find();
+      if (params.city) query = query.where('city').equals(params.city);
+      if (params.center) query = query.where('center').equals(params.center);
+      const users = await query.exec();
+      return users;
+    } catch (error) {
+      throw new BadRequestException(null, 'Not Found');
     }
   }
 }
