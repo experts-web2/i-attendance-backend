@@ -8,20 +8,22 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CenterService } from './center.service';
-import { Center, CenterDocument } from './center.schema';
+import { CenterDto } from "../dtos/center.dto"
 
+@ApiTags('Center')
 @Controller('center')
 export class CenterController {
   constructor(private service: CenterService) {}
 
   @Post('')
-  async createCenter(@Body() center: Center): Promise<string> {
+  async createCenter(@Body() center: CenterDto): Promise<string> {
     return await this.service.createCenter(center);
   }
 
   @Put('')
-  async updateCenter(@Body() center: CenterDocument): Promise<boolean> {
+  async updateCenter(@Body() center: CenterDto): Promise<boolean> {
     return await this.service.updateCenter(center);
   }
 
@@ -31,12 +33,12 @@ export class CenterController {
   }
 
   @Get('/:id')
-  async getCenter(@Param('id') id: string): Promise<CenterDocument> {
+  async getCenter(@Param('id') id: string): Promise<CenterDto> {
     return await this.service.getCenter(id);
   }
 
   @Get('')
-  async getCenters(@Query('city') city?: string): Promise<CenterDocument[]> {
+  async getCenters(@Query('city') city?: string): Promise<CenterDto[]> {
     console.log('City', city);
     return await this.service.getCenters(city);
   }

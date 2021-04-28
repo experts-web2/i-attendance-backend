@@ -10,11 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { User, UserDocument } from './user.schema';
-import {
-  IChangePasswordRequest,
-  IUserLogin,
-  IUserLoginResponse,
-} from './user.model';
+import { UserDto, UserLoginDto, UserLoginResponseDto, ChangePasswordDto } from "../dtos"
+
 @Injectable()
 export class UserService {
   constructor(
@@ -38,7 +35,7 @@ export class UserService {
     } catch (error) {}
   }
 
-  async logIn({ email, password }: IUserLogin): Promise<IUserLoginResponse> {
+  async logIn({ email, password }: UserLoginDto): Promise<UserLoginResponseDto> {
     try {
       if (!email || !password)
         throw new BadRequestException(null, 'Required Parameters Missing');
@@ -58,7 +55,7 @@ export class UserService {
     }
   }
 
-  async signUp(user: User): Promise<boolean> {
+  async signUp(user: UserDto): Promise<boolean> {
     const { name, email, password, phone, city, center } = user;
     try {
       if (!email || !password || !name || !phone || !city || !center)
@@ -78,7 +75,7 @@ export class UserService {
     }
   }
 
-  async changePassword(payload: IChangePasswordRequest): Promise<boolean> {
+  async changePassword(payload: ChangePasswordDto): Promise<boolean> {
     const { oldPassword, newPassword, email } = payload;
     try {
       const user = await this.model.findOne({ email });
@@ -94,7 +91,7 @@ export class UserService {
     } catch (error) {}
   }
 
-  // Todo. Nodemailer not actively working
+  // Todo: Nodemailer not actively working
   async forgotPassword(email: string): Promise<boolean> {
     try {
       await this.mailerService.sendMail({

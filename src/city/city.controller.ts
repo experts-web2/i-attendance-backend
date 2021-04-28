@@ -7,20 +7,22 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CityService } from './city.service';
-import { City, CityDocument } from './city.schema';
+import { CityDto } from "../dtos"
 
+@ApiTags('City')
 @Controller('city')
 export class CityController {
   constructor(private service: CityService) {}
 
   @Post('')
-  async createCity(@Body() city: City): Promise<string> {
+  async createCity(@Body() city: CityDto): Promise<string> {
     return await this.service.createCity(city);
   }
 
   @Put('')
-  async updateCity(@Body() city: CityDocument): Promise<boolean> {
+  async updateCity(@Body() city: CityDto): Promise<boolean> {
     return await this.service.updateCity(city);
   }
 
@@ -30,12 +32,12 @@ export class CityController {
   }
 
   @Get('/:id')
-  async getCity(@Param('id') id: string): Promise<CityDocument> {
+  async getCity(@Param('id') id: string): Promise<CityDto> {
     return await this.service.getCity(id);
   }
 
   @Get('')
-  async getCities(): Promise<CityDocument[]> {
+  async getCities(): Promise<CityDto[]> {
     return await this.service.getCities();
   }
 }

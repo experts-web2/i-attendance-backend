@@ -2,12 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CenterDocument, Center } from './center.schema';
+import { CenterDto } from "../dtos/center.dto"
 
 @Injectable()
 export class CenterService {
   constructor(@InjectModel(Center.name) private model: Model<CenterDocument>) {}
 
-  async createCenter(center: Center): Promise<string> {
+  async createCenter(center: CenterDto): Promise<string> {
     try {
       const newCenter = new this.model(center);
       const response = await newCenter.save();
@@ -17,7 +18,7 @@ export class CenterService {
     }
   }
 
-  async updateCenter(center: CenterDocument): Promise<boolean> {
+  async updateCenter(center: CenterDto): Promise<boolean> {
     try {
       await this.model.findByIdAndUpdate(center._id, center);
       return true;
@@ -44,7 +45,7 @@ export class CenterService {
     }
   }
 
-  async getCenters(city = undefined): Promise<CenterDocument[]> {
+  async getCenters(city = undefined): Promise<CenterDto[]> {
     try {
       const centers = city
         ? await this.model.find({ city }).populate('city').exec()
