@@ -7,6 +7,7 @@ export class UserDto {
   city: string;
   center: string;
   verified?: boolean;
+  deleted?: boolean;
 }
 
 export class UserLoginDto {

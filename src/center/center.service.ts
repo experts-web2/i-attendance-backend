@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CenterDocument, Center } from './center.schema';
-import { CenterDto } from "../dtos/center.dto"
+import { CenterDto } from '../dtos/center.dto';
 
 @Injectable()
 export class CenterService {
@@ -45,6 +45,7 @@ export class CenterService {
     }
   }
 
+  // Refactor code to add query filters and add managers
   async getCenters(city = undefined): Promise<CenterDto[]> {
     try {
       const centers = city

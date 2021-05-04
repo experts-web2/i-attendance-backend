@@ -123,7 +123,7 @@ export class UserService {
     params: GetUsersQueryParams,
   ): Promise<Omit<UserDto, 'password'>[]> {
     try {
-      let query = this.model.find();
+      let query = this.model.find({ deleted: false });
       if (params.city) query = query.where('city').equals(params.city);
       if (params.center) query = query.where('center').equals(params.center);
       const users = await query
@@ -133,6 +133,24 @@ export class UserService {
         .exec();
       return users.map(({ password, ...rest }) => ({ ...rest }));
     } catch (error) {
+      throw new BadRequestException(null, 'Not Found');
+    }
+  }
+
+  async deactivateUser(_id: string): Promise<boolean> {
+    try {
+      await this.model.updateOne({ _id }, { $set: { deleted: true } });
+      return true;
+    } catch {
+      throw new BadRequestException(null, 'Not Found');
+    }
+  }
+
+  async updateUser(id: string, user: UserDto): Promise<boolean> {
+    try {
+      await this.model.findByIdAndUpdate(id, user);
+      return true;
+    } catch {
       throw new BadRequestException(null, 'Not Found');
     }
   }
