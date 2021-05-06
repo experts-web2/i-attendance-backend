@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { UserDto } from 'src/dtos';
 
 @Schema()
 export class Center {
@@ -15,7 +14,7 @@ export class Center {
     default: [],
     type: [{ type: MongooseSchema.Types.ObjectId, ref: 'User' }],
   })
-  managers: UserDto[];
+  managers: string[];
 }
 
 export type CenterDocument = Center & Document;

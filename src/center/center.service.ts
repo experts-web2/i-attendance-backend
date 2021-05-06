@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CenterDocument, Center } from './center.schema';
-import { CenterDto } from '../dtos/center.dto';
+import { CenterDto, GetCentersQueryParams } from '../dtos/center.dto';
 
 @Injectable()
 export class CenterService {
@@ -29,7 +29,7 @@ export class CenterService {
 
   async getCenter(id: string): Promise<CenterDocument> {
     try {
-      const center = await this.model.findById(id);
+      const center = await this.model.findById(id).populate('managers');
       return center;
     } catch (error) {
       throw new NotFoundException();
@@ -45,12 +45,15 @@ export class CenterService {
     }
   }
 
-  // Refactor code to add query filters and add managers
-  async getCenters(city = undefined): Promise<CenterDto[]> {
+  async getCenters(params: GetCentersQueryParams): Promise<CenterDto[]> {
     try {
-      const centers = city
-        ? await this.model.find({ city }).populate('city').exec()
-        : await this.model.find().populate('city').exec();
+      let query = this.model.find();
+      if (params.city) query = query.where('city').equals(params.city);
+      const centers = await query
+        .lean()
+        .populate('city')
+        .populate('managers')
+        .exec();
       return centers;
     } catch (error) {
       throw new NotFoundException();

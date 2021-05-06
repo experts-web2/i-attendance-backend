@@ -1,8 +1,13 @@
-import { UserDto } from './user.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CenterDto {
   _id?: string;
   name: string;
   city: string;
-  managers: UserDto[];
+  managers: string[];
+}
+
+export class GetCentersQueryParams {
+  @ApiPropertyOptional()
+  city: string;
 }
