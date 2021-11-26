@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CenterService } from './center.service';
-import { Public } from '../meta';
-import { CenterDto, GetCentersQueryParams } from '../dtos/center.dto';
+import { Public } from '../../meta';
+import { CenterDto, GetCentersQueryParams } from '../../dtos/center.dto';
 
 @ApiTags('Center')
 @Controller('center')

@@ -10,14 +10,14 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { Public } from '../meta';
+import { Public } from '../../meta';
 import {
   UserDto,
   UserLoginDto,
   UserLoginResponseDto,
   ChangePasswordDto,
   GetUsersQueryParams,
-} from '../dtos';
+} from '../../dtos';
 
 @ApiTags('User')
 @Controller('user')

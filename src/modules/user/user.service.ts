@@ -16,7 +16,7 @@ import {
   UserLoginResponseDto,
   ChangePasswordDto,
   GetUsersQueryParams,
-} from '../dtos';
+} from '../../dtos';
 
 @Injectable()
 export class UserService {

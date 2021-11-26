@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CityService } from './city.service';
-import { Public } from '../meta';
-import { CityDto } from '../dtos';
+import { Public } from '../../meta';
+import { CityDto } from '../../dtos';
 
 @ApiTags('City')
 @Controller('city')

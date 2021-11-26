@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CenterDocument, Center } from './center.schema';
-import { CenterDto, GetCentersQueryParams } from '../dtos/center.dto';
+import { CenterDto, GetCentersQueryParams } from '../../dtos/center.dto';
 
 @Injectable()
 export class CenterService {
