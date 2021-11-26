@@ -23,6 +23,9 @@ export class User {
 
   @Prop({ default: false })
   verified: boolean;
+
+  @Prop({ default: false })
+  deleted: boolean;
 }
 
 export type UserDocument = User & Document;

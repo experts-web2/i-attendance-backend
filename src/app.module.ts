@@ -5,7 +5,9 @@ import { MailerModule, MailerService } from '@nestjs-modules/mailer';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { JwtAuthGuard } from './guards/jwt.guard';
-import { UserModule } from './user/user.module';
+import { UserModule } from './modules/user/user.module';
+import { CityModule } from './modules/city/city.module';
+import { CenterModule } from './modules/center/center.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { UserModule } from './user/user.module';
       },
     }),
     UserModule,
+    CityModule,
+    CenterModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],

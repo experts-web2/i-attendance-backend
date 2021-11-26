@@ -11,10 +11,13 @@ import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { User, UserDocument } from './user.schema';
 import {
-  IChangePasswordRequest,
-  IUserLogin,
-  IUserLoginResponse,
-} from './user.model';
+  UserDto,
+  UserLoginDto,
+  UserLoginResponseDto,
+  ChangePasswordDto,
+  GetUsersQueryParams,
+} from '../../dtos';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -35,10 +38,15 @@ export class UserService {
         const { password, ...rest } = user.toObject();
         return rest;
       } else return null;
-    } catch (error) {}
+    } catch (error) {
+      throw new NotFoundException(null, 'User Not Found');
+    }
   }
 
-  async logIn({ email, password }: IUserLogin): Promise<IUserLoginResponse> {
+  async logIn({
+    email,
+    password,
+  }: UserLoginDto): Promise<UserLoginResponseDto> {
     try {
       if (!email || !password)
         throw new BadRequestException(null, 'Required Parameters Missing');
@@ -54,11 +62,11 @@ export class UserService {
         return { user: rest, token };
       }
     } catch (error) {
-      console.log({ error });
+      throw new NotFoundException(null, 'User Not Found');
     }
   }
 
-  async signUp(user: User): Promise<boolean> {
+  async signUp(user: UserDto): Promise<boolean> {
     const { name, email, password, phone, city, center } = user;
     try {
       if (!email || !password || !name || !phone || !city || !center)
@@ -74,11 +82,11 @@ export class UserService {
       await newUser.save();
       return true;
     } catch (error) {
-      console.log({ error });
+      throw new NotFoundException(null, 'User Not Found');
     }
   }
 
-  async changePassword(payload: IChangePasswordRequest): Promise<boolean> {
+  async changePassword(payload: ChangePasswordDto): Promise<boolean> {
     const { oldPassword, newPassword, email } = payload;
     try {
       const user = await this.model.findOne({ email });
@@ -91,10 +99,12 @@ export class UserService {
         await this.model.updateOne({ _id: user._id }, { ...user, password });
         return true;
       }
-    } catch (error) {}
+    } catch (error) {
+      throw new BadRequestException(null, 'User Not Found');
+    }
   }
 
-  // Todo. Nodemailer not actively working
+  // Todo: Nodemailer not actively working
   async forgotPassword(email: string): Promise<boolean> {
     try {
       await this.mailerService.sendMail({
@@ -105,7 +115,43 @@ export class UserService {
       });
       return true;
     } catch (error) {
-      console.log(error);
+      throw new BadRequestException(null, 'Not Found');
+    }
+  }
+
+  async getUsers(
+    params: GetUsersQueryParams,
+  ): Promise<Omit<UserDto, 'password'>[]> {
+    try {
+      let query = this.model.find({ deleted: false });
+      if (params.city) query = query.where('city').equals(params.city);
+      if (params.center) query = query.where('center').equals(params.center);
+      const users = await query
+        .lean()
+        .populate('city')
+        .populate('center')
+        .exec();
+      return users.map(({ password, ...rest }) => ({ ...rest }));
+    } catch (error) {
+      throw new BadRequestException(null, 'Not Found');
+    }
+  }
+
+  async deactivateUser(_id: string): Promise<boolean> {
+    try {
+      await this.model.updateOne({ _id }, { $set: { deleted: true } });
+      return true;
+    } catch {
+      throw new BadRequestException(null, 'Not Found');
+    }
+  }
+
+  async updateUser(id: string, user: UserDto): Promise<boolean> {
+    try {
+      await this.model.findByIdAndUpdate(id, user);
+      return true;
+    } catch {
+      throw new BadRequestException(null, 'Not Found');
     }
   }
 }
