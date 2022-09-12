@@ -8,14 +8,19 @@ import { JwtAuthGuard } from './guards/jwt.guard';
 import { UserModule } from './modules/user/user.module';
 import { CityModule } from './modules/city/city.module';
 import { CenterModule } from './modules/center/center.module';
+import { UserRoleModule } from './modules/role/userRole.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
+import { PasswordModule } from './modules/password/password.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/attendance', {
-      useCreateIndex: true,
-      useFindAndModify: false,
-      useNewUrlParser: true,
-    }),
+    MongooseModule.forRoot(
+      'mongodb+srv://ghulam:ghulam123@cluster0.hu5pa.mongodb.net/attendance?retryWrites=true&w=majority',
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      },
+    ),
     MailerModule.forRoot({
       transport: 'smtps://user@domain.com:pass@smtp.domain.com',
       defaults: {
@@ -25,6 +30,9 @@ import { CenterModule } from './modules/center/center.module';
     UserModule,
     CityModule,
     CenterModule,
+    AttendanceModule,
+    UserRoleModule,
+    // PasswordModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],

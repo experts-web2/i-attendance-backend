@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 @Schema()
 export class User {
@@ -9,17 +10,23 @@ export class User {
   @Prop({ unique: true, required: true })
   email: string;
 
-  @Prop({ unique: true, required: true })
-  phone: string;
+  @Prop({ unique: false, required: false })
+  phoneNumber: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   password: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'City' })
+  @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'City' }])
   city: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Center' })
+  @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'Center' }])
   center: string;
+
+  @Prop({ required: true })
+  role: string;
+
+  @Prop({ required: false })
+  status: string;
 
   @Prop({ default: false })
   verified: boolean;

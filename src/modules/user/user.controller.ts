@@ -17,6 +17,8 @@ import {
   UserLoginResponseDto,
   ChangePasswordDto,
   GetUsersQueryParams,
+  forgotPasswordDto,
+  statusDto,
 } from '../../dtos';
 
 @ApiTags('User')
@@ -33,19 +35,23 @@ export class UserController {
   @Public()
   @Post('sign-up')
   async signUp(@Body() user: UserDto): Promise<boolean> {
+    console.log('user', user);
     return await this.service.signUp(user);
   }
-
   @Public()
-  @Get('forgot-password/:email')
-  async forgotPassword(@Param('email') email: string): Promise<boolean> {
-    return await this.service.forgotPassword(email);
+  @Post('save-user')
+  async saveUser(@Body() user: UserDto): Promise<any> {
+    console.log('user', user);
+    return await this.service.saveUser(user);
   }
 
-  @Post('change-password')
-  async changePassword(@Body() payload: ChangePasswordDto): Promise<boolean> {
-    return await this.service.changePassword(payload);
-  }
+  // @Public()
+  // @Get('forgot-password/:email')
+  // async forgotPassword(
+  //   @Param('email') forgotPasswordDto: forgotPasswordDto,
+  // ): Promise<boolean> {
+  //   return await this.service.forgotPassword(forgotPasswordDto);
+  // }
 
   @Get('')
   async getUsers(
@@ -65,5 +71,23 @@ export class UserController {
     @Body() user: UserDto,
   ): Promise<boolean> {
     return this.service.updateUser(id, user);
+  }
+
+  @Post('/update')
+  async updateStatus(@Body() id: any): Promise<any> {
+    // console.log('id', id);
+    return await this.service.updateStatus(id);
+  }
+  @Post('/send')
+  async sendNotification(@Body() data: UserDto) {
+    return await this.service.sendNotification(data);
+  }
+  @Post('getRole')
+  async getRoleByID(@Body() centerID: any, cityId: any): Promise<any> {
+    return await this.service.getRoleByID(centerID, cityId);
+  }
+  @Post('change-password')
+  changePassword(@Body() changePasswordDto: ChangePasswordDto): any {
+    return this.service.changePassword(changePasswordDto);
   }
 }

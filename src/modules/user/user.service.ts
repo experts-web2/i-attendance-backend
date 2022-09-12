@@ -4,12 +4,13 @@ import {
   NotFoundException,
   NotAcceptableException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { User, UserDocument } from './user.schema';
+import { forgotPasswordDto, statusDto } from '../../dtos';
 import {
   UserDto,
   UserLoginDto,
@@ -17,7 +18,24 @@ import {
   ChangePasswordDto,
   GetUsersQueryParams,
 } from '../../dtos';
+import { SchemaTypes, Types, Document } from 'mongoose';
+const ObjectId = Types.ObjectId;
+// const nodemailer = require('nodemailer');
 
+// require('dotenv').config({ path: '.env' });
+// const {
+//   NODEMAILER_SERVICE,
+//   NODEMAILER_PASSWORD,
+//   NODEMAILER_EMAIL,
+// } = process.env;
+
+// const transporter = nodemailer.createTransport({
+//   service: NODEMAILER_SERVICE,
+//   auth: {
+//     user: NODEMAILER_EMAIL,
+//     pass: NODEMAILER_PASSWORD,
+//   },
+// });
 @Injectable()
 export class UserService {
   constructor(
@@ -50,28 +68,55 @@ export class UserService {
     try {
       if (!email || !password)
         throw new BadRequestException(null, 'Required Parameters Missing');
-      const user = await this.model.findOne({ email });
-      if (!user) throw new NotFoundException(null, 'User Not Found');
-      const isPasswordMatched = await bcrypt.compare(password, user.password);
+      const user: any = await this.model.findOne({ email });
+      const newUser: any = JSON.parse(JSON.stringify(user));
+      if (!newUser) throw new NotFoundException(null, 'User Not Found');
+      const isPasswordMatched = await bcrypt.compare(
+        password,
+        newUser.password,
+      );
       if (isPasswordMatched) {
-        const { password, ...rest } = user.toObject();
-        const token = this.jwtService.sign({
-          username: user.name,
-          sub: user._id,
+        const { password, ...rest } = newUser;
+        const token: any = this.jwtService.sign({
+          username: newUser.name,
+          sub: newUser._id,
         });
-        return { user: rest, token };
+        return { newUser: rest, token };
       }
     } catch (error) {
       throw new NotFoundException(null, 'User Not Found');
     }
   }
-
-  async signUp(user: UserDto): Promise<boolean> {
-    const { name, email, password, phone, city, center } = user;
+  async saveUser(user: any) {
     try {
-      if (!email || !password || !name || !phone || !city || !center)
+      const newUser = new this.model(user);
+
+      const result = await newUser.save();
+
+      console.log('USER', user);
+      console.log('result', result);
+      return result;
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async signUp(user: UserDto): Promise<any> {
+    const { name, email, password, phoneNumber, city, center, role } = user;
+    console.log('user', name, email, password, phoneNumber, city, center, role);
+    try {
+      if (
+        !email ||
+        !password ||
+        !name ||
+        !phoneNumber ||
+        !city ||
+        !center ||
+        !role
+      )
         throw new BadRequestException(null, 'Required Parameters Missing');
       const existingUser = await this.model.findOne({ email });
+      console.log('existingUser', existingUser);
       if (existingUser)
         throw new NotAcceptableException(
           null,
@@ -79,44 +124,18 @@ export class UserService {
         );
       const hash = await bcrypt.hash(password, 10);
       const newUser = new this.model({ ...user, password: hash });
+
       await newUser.save();
       return true;
     } catch (error) {
-      throw new NotFoundException(null, 'User Not Found');
+      throw new NotFoundException(null, error);
     }
   }
-
-  async changePassword(payload: ChangePasswordDto): Promise<boolean> {
-    const { oldPassword, newPassword, email } = payload;
-    try {
-      const user = await this.model.findOne({ email });
-      const oldPasswordMatched = await bcrypt.compare(
-        oldPassword,
-        user.password,
-      );
-      if (oldPasswordMatched) {
-        const password = await bcrypt.hash(newPassword, 10);
-        await this.model.updateOne({ _id: user._id }, { ...user, password });
-        return true;
-      }
-    } catch (error) {
-      throw new BadRequestException(null, 'User Not Found');
-    }
-  }
-
-  // Todo: Nodemailer not actively working
-  async forgotPassword(email: string): Promise<boolean> {
-    try {
-      await this.mailerService.sendMail({
-        to: email,
-        from: 'test@test.com',
-        subject: 'Reset Your Password',
-        text: 'Reset Your Password',
-      });
-      return true;
-    } catch (error) {
-      throw new BadRequestException(null, 'Not Found');
-    }
+  async sendNotification(data: UserDto): Promise<any> {
+    const { name, email, password, phoneNumber, city, center, role } = data;
+    console.log('data', data);
+    const newData = await this.model.findOne({ email });
+    console.log('newData', newData);
   }
 
   async getUsers(
@@ -148,10 +167,124 @@ export class UserService {
 
   async updateUser(id: string, user: UserDto): Promise<boolean> {
     try {
-      await this.model.findByIdAndUpdate(id, user);
+      const data = await this.model.findByIdAndUpdate(id, user);
+      console.log('data', data);
       return true;
     } catch {
       throw new BadRequestException(null, 'Not Found');
     }
   }
+
+  async updateStatus(body: any) {
+    const { id, status } = body;
+    console.log('id', id);
+
+    const _id = new ObjectId(id);
+    console.log('_id', _id);
+
+    try {
+      // if (id.status === 'Approved') {
+      const data = await this.model.findByIdAndUpdate(
+        { _id },
+
+        {
+          status: status,
+        },
+      );
+      console.log('data', data);
+      // }
+      // if (id.status === 'Denied') {
+      // }
+
+      return data;
+    } catch (error) {
+      return error.message;
+    }
+  }
+  // async getStatus(status: statusDto) {
+  //   try {
+  //     const status = await this.model.findById(id);
+  //     return status;
+  //   } catch (error) {
+  //     throw new NotFoundException();
+  //   }
+  // }
+  async getRoleByID(centerId: any, cityId: any): Promise<any> {
+    try {
+      console.log('center', centerId.cityId, 'city', cityId);
+      const data = await this.model.find({
+        city: { $in: [centerId.cityId] },
+        center: { $in: [centerId.centerId] },
+      });
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Todo: Nodemailer not actively working
+  // async forgotPassword(forgotPasswordDto: forgotPasswordDto): Promise<boolean> {
+  //   try {
+  //     let info = await transporter.sendMail({
+  //       to,
+  //       subject,
+  //       text
+  //     });
+  //     console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+  //     return true;
+  //   } catch (error) {
+  //     throw new BadRequestException(null, 'Not Found');
+  //   }
+  // }
+
+  async changePassword(changePasswordDto: any) {
+    console.log('changePasswordDto', changePasswordDto);
+    try {
+      const user = await this.model.findById(changePasswordDto.userId);
+      console.log('userId', user);
+      console.log('oldPassword', changePasswordDto.oldpassword);
+      const oldPasswordMatched = await bcrypt.compare(
+        changePasswordDto.oldpassword,
+        user.password,
+      );
+      console.log('oldPasswordMatched', oldPasswordMatched);
+      if (oldPasswordMatched) {
+        const password = await bcrypt.hash(changePasswordDto.newPassword, 10);
+        console.log('password', password);
+
+        const pass = await this.model.updateOne(
+          { _id: user._id },
+          {
+            $set: {
+              password,
+            },
+          },
+        );
+
+        console.log('pss', pass);
+        return pass;
+      }
+    } catch (error) {
+      return error;
+    }
+  }
+
+  // async changePassword(payload: ChangePasswordDto): Promise<boolean> {
+  //   const { oldPassword, newPassword, email } = payload;
+  //   try {
+  //     const user = await this.model.findOne({ email });
+  //     const oldPasswordMatched = await bcrypt.compare(
+  //       oldPassword,
+  //       user.password,
+  //     );
+  //     if (oldPasswordMatched) {
+  //       const password = await bcrypt.hash(newPassword, 10);
+  //       await this.model.updateOne({ _id: user._id }, { ...user, password });
+  //       return true;
+  //     }
+  //   } catch (error) {
+  //     throw new BadRequestException(null, 'User Not Found');
+  //   }
+  // }
 }
